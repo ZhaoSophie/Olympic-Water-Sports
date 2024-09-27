@@ -1,0 +1,103 @@
+<html>
+
+<head>
+  <style>
+  
+  .gridlines line {
+    stroke: #bbb;
+  }
+  
+  .gridlines .domain {
+    stroke: none;
+  }
+
+  </style>
+</head>
+  
+<body style="margin: 75">
+  <h3>
+    Homework 4 - Sophie Zhao (sz266)
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+  </h3>
+  <p>
+    <b>Problem 1:</b>
+    <br />
+    <b>A</b>
+    <br /><b>Marks:</b> Circles
+    <br /><b>Channels:</b> Varying the horizontal and vertical aligned position (common scale is axes) of the circles. Also varying the color hue and luminosity of the circles.
+    <br /><b>B</b>
+    <br /><b>Marks:</b> Silhouettes of the shape of dog breed
+    <br /><b>Channels:</b> Varying the horizonal and vertical aligned (common scale is axes) position of the silhouettes representing the creators' data score and the popularity of the dog breeds. Varying the color hue of the silhouettes to representing different types of dogs. Varying the area of the silhouettes to represent the size of the dogs. Finally, varying the direction (shape / area) of the silhouettes (dog facing right if they are clever, left if they are dumb)
+  </p>
+  <p>
+    <b>Problem 2:</b>
+    <br />
+    <svg height=500 width=500 style="border:1px solid black; margin-bottom:50px;"></svg>
+    <script>
+
+      const svg = d3.select('svg');
+      const width = svg.attr('width');
+      const height = svg.attr('height');
+      const margins = {top: 10, right: 10, bottom: 50, left: 50};
+      const chartWidth = width - margins.left - margins.right;
+      const chartHeight = height - margins.top - margins.bottom;
+
+      let chartArea = svg.append('g')
+                         .attr('transform',`translate(${margins.left},${margins.top})`);
+
+      d3.json('chip_dataset.json').then( (data) => {
+        const xExtent = d3.extent(data, d => d['Release Day'] );
+        const xScale = d3.scaleLinear().domain(xExtent)
+                                       .range([0, chartWidth]);
+      
+        const yExtent = d3.extent(data, d => d['Transistors(million)'] );
+        const yScale = d3.scaleLog().domain(yExtent)
+                                       .range([chartHeight, 0]);
+        
+        let leftAxis = d3.axisLeft(yScale);
+        svg.append('g')
+           .attr("class", "axis")
+           .attr('transform',`translate(${margins.left-10},${margins.top})`) 
+           .call(leftAxis);
+        
+        let leftGridlines = d3.axisLeft(yScale)
+                              .tickSize(-chartWidth-10)
+                              .tickFormat('');
+        svg.append('g')
+           .attr("class", "gridlines")
+           .attr('transform',`translate(${margins.left-10},${margins.top})`)
+           .call(leftGridlines);
+        
+        let bottomAxis = d3.axisBottom(xScale);
+        svg.append('g')
+           .attr('class', 'axis')
+           .attr('transform',`translate(${margins.left},${chartHeight+margins.top+10})`)
+           .call(bottomAxis);
+        
+        let bottomGridlines = d3.axisBottom(xScale)
+                      .tickSize(-chartHeight-10)
+                      .tickFormat('');
+        svg.append('g')
+           .attr("class", "gridlines")
+           .attr('transform',`translate(${margins.left},${chartHeight+margins.top+10})`)
+           .call(bottomGridlines);
+
+        data.forEach( (d, i) => {
+
+        chartArea.append('circle')
+            .attr('cx', xScale(d['Release Day']))
+            .attr('cy', yScale(d['Transistors(million)']))
+            .attr('r', 3)
+            .attr('opacity', 0.3)
+            .attr('index', i)
+            .style('fill', '#00008B');
+
+        });
+      });
+
+    </script>
+
+  </p>
+</body>
+
+</html>
