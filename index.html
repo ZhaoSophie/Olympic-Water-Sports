@@ -24,6 +24,18 @@
     <br />
     <svg height=500 width=500 style="border:1px solid black; margin-bottom:50px;"></svg>
     <script>
+      // Coastlines Mappings
+      let coastlines = new Map()
+
+      d3.csv('../data/coastlines.csv').then( (data) => {
+        data.forEach( (d, i) => {
+          coastlines.set(d.country, d.coastline_wf)
+        })
+      })
+
+      console.log(coastlines);
+
+      // Chart Area
 
       const svg = d3.select('svg');
       const width = svg.attr('width');
@@ -35,7 +47,23 @@
       let chartArea = svg.append('g')
                          .attr('transform',`translate(${margins.left},${margins.top})`);
 
-      d3.json('chip_dataset.json').then( (data) => {
+      d3.csv('../data/water_sports.csv').then( (data) => {
+
+        // Medal Counts
+
+        let medal_counts = new Map();
+
+        data.forEach( (d, i) => {
+          if (medal_counts.has(d.country)) {
+            medal_counts.set(d.country, medal_counts.get(d.country) + 1)
+          } else {
+            medal_counts.set(d.country, 1);
+          }
+        })
+
+        console.log(medal_counts);
+
+        // Extents and Scales
         const xExtent = d3.extent(data, d => d['Release Day'] );
         const xScale = d3.scaleLinear().domain(xExtent)
                                        .range([0, chartWidth]);
@@ -44,6 +72,8 @@
         const yScale = d3.scaleLog().domain(yExtent)
                                        .range([chartHeight, 0]);
         
+        // Left Axeses and Gridlines
+
         let leftAxis = d3.axisLeft(yScale);
         svg.append('g')
            .attr("class", "axis")
@@ -57,6 +87,8 @@
            .attr("class", "gridlines")
            .attr('transform',`translate(${margins.left-10},${margins.top})`)
            .call(leftGridlines);
+
+        // Bottom Axeses and Gridlines
         
         let bottomAxis = d3.axisBottom(xScale);
         svg.append('g')
@@ -71,6 +103,8 @@
            .attr("class", "gridlines")
            .attr('transform',`translate(${margins.left},${chartHeight+margins.top+10})`)
            .call(bottomGridlines);
+
+        // Circles
 
         data.forEach( (d, i) => {
 
