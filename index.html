@@ -26,10 +26,12 @@
     <script>
       // Coastlines Mappings
       let coastlines = new Map()
+      let maxCoast = 0;
 
       d3.csv('../data/coastlines.csv').then( (data) => {
         data.forEach( (d, i) => {
-          coastlines.set(d.country, d.coastline_wf)
+          coastlines.set(d.country, d.coastline_wf);
+          maxCoast = Math.max(maxCoast, d.coastline_wf);
         })
       })
 
@@ -62,23 +64,33 @@
         })
 
         console.log(medal_counts);
+        console.log(medal_counts.size);
+        console.log(maxCoast);
 
         // Extents and Scales
-        const xExtent = d3.extent(data, d => d['Release Day'] );
-        const xScale = d3.scaleLinear().domain(xExtent)
+        // const xExtent = d3.extent(data, d => d['Release Day'] );
+        const xScale = d3.scaleLinear().domain([0, medal_counts.size])
                                        .range([0, chartWidth]);
       
-        const yExtent = d3.extent(data, d => d['Transistors(million)'] );
-        const yScale = d3.scaleLog().domain(yExtent)
+        // const yExtent = d3.extent(data, d => d['Transistors(million)'] );
+        const yScale = d3.scaleLinear().domain([0, maxCoast])
                                        .range([chartHeight, 0]);
         
-        // Left Axeses and Gridlines
+        // Axes
 
         let leftAxis = d3.axisLeft(yScale);
         svg.append('g')
            .attr("class", "axis")
            .attr('transform',`translate(${margins.left-10},${margins.top})`) 
            .call(leftAxis);
+
+        let bottomAxis = d3.axisBottom(xScale);
+        svg.append('g')
+           .attr('class', 'axis')
+           .attr('transform',`translate(${margins.left},${chartHeight+margins.top+10})`)
+           .call(bottomAxis);
+
+        // Gridlines
         
         let leftGridlines = d3.axisLeft(yScale)
                               .tickSize(-chartWidth-10)
@@ -86,15 +98,7 @@
         svg.append('g')
            .attr("class", "gridlines")
            .attr('transform',`translate(${margins.left-10},${margins.top})`)
-           .call(leftGridlines);
-
-        // Bottom Axeses and Gridlines
-        
-        let bottomAxis = d3.axisBottom(xScale);
-        svg.append('g')
-           .attr('class', 'axis')
-           .attr('transform',`translate(${margins.left},${chartHeight+margins.top+10})`)
-           .call(bottomAxis);
+           .call(leftGridlines);        
         
         let bottomGridlines = d3.axisBottom(xScale)
                       .tickSize(-chartHeight-10)
@@ -106,17 +110,17 @@
 
         // Circles
 
-        data.forEach( (d, i) => {
+        // data.forEach( (d, i) => {
 
-        chartArea.append('circle')
-            .attr('cx', xScale(d['Release Day']))
-            .attr('cy', yScale(d['Transistors(million)']))
-            .attr('r', 3)
-            .attr('opacity', 0.3)
-            .attr('index', i)
-            .style('fill', '#00008B');
+        // chartArea.append('circle')
+        //     .attr('cx', xScale(d['Release Day']))
+        //     .attr('cy', yScale(d['Transistors(million)']))
+        //     .attr('r', 3)
+        //     .attr('opacity', 0.3)
+        //     .attr('index', i)
+        //     .style('fill', '#00008B');
 
-        });
+        // });
       });
 
     </script>
