@@ -20,9 +20,8 @@
     <script src="https://d3js.org/d3.v7.min.js"></script>
   </h3>
   <p>
-    <b>Title</b>
     <br />
-    <svg height=500 width=500 style="border:1px solid black; margin-bottom:50px;"></svg>
+    <svg height=500 width=500 style="margin-bottom:50px"></svg>
     <script>
       // Coastlines Mappings
       let coastlines = new Map()
@@ -73,7 +72,7 @@
                                        .range([0, chartWidth]);
       
         // const yExtent = d3.extent(data, d => d['Transistors(million)'] );
-        const yScale = d3.scaleLinear().domain([0, maxCoast])
+        const yScale = d3.scaleLinear().domain([0, 35000])    // should be maxCoast but there are outliers
                                        .range([chartHeight, 0]);
         
         // Axes
@@ -110,17 +109,20 @@
 
         // Circles
 
-        // data.forEach( (d, i) => {
+        medal_counts.forEach( (medals, country) => {
 
-        // chartArea.append('circle')
-        //     .attr('cx', xScale(d['Release Day']))
-        //     .attr('cy', yScale(d['Transistors(million)']))
-        //     .attr('r', 3)
-        //     .attr('opacity', 0.3)
-        //     .attr('index', i)
-        //     .style('fill', '#00008B');
+          console.log(medals);
+          console.log(coastlines.get(country));
 
-        // });
+          if (coastlines.has(country)) {
+            chartArea.append('circle')
+              .attr('cx', xScale(medals))
+              .attr('cy', yScale(coastlines.get(country)))
+              .attr('r', 3)
+              .style('fill', '#00008B');
+          }
+
+        });
       });
 
     </script>
