@@ -16,21 +16,19 @@
   
 <body style="margin: 75">
   <h3>
-    Olympic Water Sports
+    Countries by Coastline Distance and Water Sport Medals in 2024 Olympics
     <script src="https://d3js.org/d3.v7.min.js"></script>
   </h3>
   <p>
     <br />
-    <svg height=500 width=500 style="margin-bottom:50px"></svg>
+    <svg height=750 width=750 style="margin-bottom:50px"></svg>
     <script>
       // Coastlines Mappings
       let coastlines = new Map()
-      let maxCoast = 0;
 
       d3.csv('../data/coastlines.csv').then( (data) => {
         data.forEach( (d, i) => {
-          coastlines.set(d.country, d.coastline_wf);
-          maxCoast = Math.max(maxCoast, d.coastline_wf);
+          coastlines.set(d.country, Number(d.coastline_wf));
         })
       })
 
@@ -41,7 +39,7 @@
       const svg = d3.select('svg');
       const width = svg.attr('width');
       const height = svg.attr('height');
-      const margins = {top: 10, right: 10, bottom: 50, left: 50};
+      const margins = {top: 10, right: 10, bottom: 100, left: 80};
       const chartWidth = width - margins.left - margins.right;
       const chartHeight = height - margins.top - margins.bottom;
 
@@ -62,26 +60,48 @@
           }
         })
 
-        console.log(medal_counts);
-        console.log(medal_counts.size);
-        console.log(maxCoast);
+        const medal_count_array = Array.from(medal_counts.values());
+        const coastline_array= Array.from(coastlines.values());
+
+        const filtered_array = coastline_array.filter(d => d > 0);
+
+        console.log(filtered_array)
 
         // Extents and Scales
-        // const xExtent = d3.extent(data, d => d['Release Day'] );
-        const xScale = d3.scaleLinear().domain([0, medal_counts.size])
+        const xExtent = d3.extent(filtered_array);
+        const xScale = d3.scaleLog().domain(xExtent)
                                        .range([0, chartWidth]);
       
-        // const yExtent = d3.extent(data, d => d['Transistors(million)'] );
-        const yScale = d3.scaleLinear().domain([0, 35000])    // should be maxCoast but there are outliers
+        const yExtent = d3.extent(medal_count_array);
+        console.log(yExtent);
+        const yScale = d3.scaleLog().domain(yExtent)
                                        .range([chartHeight, 0]);
+
+        // Labels
         
+        svg.append("text")
+            .attr("class", "y label")
+            .attr("text-anchor", "middle")
+            .attr("x", -chartHeight/2 - margins.top)
+            .attr("dy", ".75em")
+            .attr("transform", "rotate(-90)")
+            .text("Medals in Water Sports (Logarithmic)");
+
+        svg.append("text")
+            .attr("class", "x label")
+            .attr("text-anchor", "middle")
+            .attr("dominant-baseline", "middle")
+            .attr("x", chartWidth/2 + margins.left)
+            .attr("y", height-40)
+            .text("Coastline Distance (km) (Logarithmic)");
+
         // Axes
 
         let leftAxis = d3.axisLeft(yScale);
         svg.append('g')
            .attr("class", "axis")
            .attr('transform',`translate(${margins.left-10},${margins.top})`) 
-           .call(leftAxis);
+           .call(leftAxis)
 
         let bottomAxis = d3.axisBottom(xScale);
         svg.append('g')
@@ -115,10 +135,10 @@
           console.log(coastlines.get(country));
 
           if (coastlines.has(country)) {
-            chartArea.append('circle')
-              .attr('cx', xScale(medals))
-              .attr('cy', yScale(coastlines.get(country)))
-              .attr('r', 3)
+              chartArea.append('circle')
+              .attr('cx', xScale(coastlines.get(country)))
+              .attr('cy', yScale(medals))
+              .attr('r', 5)
               .style('fill', '#00008B');
           }
 
