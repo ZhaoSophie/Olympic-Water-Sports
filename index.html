@@ -21,9 +21,10 @@
   </h3>
   <p>
     <br />
-    <svg height=750 width=750 style="margin-bottom:50px"></svg>
+    <svg height=650 width=650 style="margin-bottom:50px"></svg>
     <script>
       // Coastlines Mappings
+
       let coastlines = new Map()
 
       d3.csv('../data/coastlines.csv').then( (data) => {
@@ -31,8 +32,6 @@
           coastlines.set(d.country, Number(d.coastline_wf));
         })
       })
-
-      console.log(coastlines);
 
       // Chart Area
 
@@ -62,10 +61,7 @@
 
         const medal_count_array = Array.from(medal_counts.values());
         const coastline_array= Array.from(coastlines.values());
-
         const filtered_array = coastline_array.filter(d => d > 0);
-
-        console.log(filtered_array)
 
         // Extents and Scales
         const xExtent = d3.extent(filtered_array);
@@ -73,7 +69,6 @@
                                        .range([0, chartWidth]);
       
         const yExtent = d3.extent(medal_count_array);
-        console.log(yExtent);
         const yScale = d3.scaleLog().domain(yExtent)
                                        .range([chartHeight, 0]);
 
@@ -83,16 +78,15 @@
             .attr("class", "y label")
             .attr("text-anchor", "middle")
             .attr("x", -chartHeight/2 - margins.top)
-            .attr("dy", ".75em")
+            .attr("y", 20)
             .attr("transform", "rotate(-90)")
             .text("Medals in Water Sports (Logarithmic)");
 
         svg.append("text")
             .attr("class", "x label")
             .attr("text-anchor", "middle")
-            .attr("dominant-baseline", "middle")
             .attr("x", chartWidth/2 + margins.left)
-            .attr("y", height-40)
+            .attr("y", height-20)
             .text("Coastline Distance (km) (Logarithmic)");
 
         // Axes
@@ -130,18 +124,13 @@
         // Circles
 
         medal_counts.forEach( (medals, country) => {
-
-          console.log(medals);
-          console.log(coastlines.get(country));
-
           if (coastlines.has(country)) {
-              chartArea.append('circle')
+              chartArea.append('circle') // fix circle locations
               .attr('cx', xScale(coastlines.get(country)))
               .attr('cy', yScale(medals))
               .attr('r', 5)
               .style('fill', '#00008B');
           }
-
         });
       });
 
