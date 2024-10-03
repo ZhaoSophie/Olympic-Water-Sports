@@ -2,18 +2,16 @@
 
 <head>
   <style>
-  
-  .gridlines line {
-    stroke: #bbb;
-  }
-  
-  .gridlines .domain {
-    stroke: none;
-  }
+    .gridlines line {
+      stroke: #bbb;
+    }
 
+    .gridlines .domain {
+      stroke: none;
+    }
   </style>
 </head>
-  
+
 <body style="margin: 75">
   <h3>
     Countries by Coastline Distance and Water Sport Medals in 2024 Olympics
@@ -27,31 +25,46 @@
 
       let coastlines = new Map()
 
-      d3.csv('../data/coastlines.csv').then( (data) => {
-        data.forEach( (d, i) => {
+      d3.csv('../data/coastlines.csv').then((data) => {
+        data.forEach((d, i) => {
           coastlines.set(d.country, Number(d.coastline_wf));
         })
       })
+
+
+
+      // GDP data
+      //let revelant_countries = ['Argentina', 'Australia', 'Brazil', 'Canada', 'China', 'Croatia', 'Cuba', 'Cyprus', 'Czechia', 'Denmark', 'France', 'Germany', 'Great Britain', 'Greece', '"Hong Kong, China"', 'Hungary', 'Ireland', 'Israel', 'Italy', 'Japan', 'Korea', 'Lithuania', 'Netherlands', 'New Zealand', 'Norway', 'Peru', 'Poland', 'Republic of Moldova', 'Romania', 'Serbia', 'Singapore', 'Slovakia', 'South Africa', 'Spain', 'Sweden', 'Switzerland', 'Ukraine', 'United States']
+
+      let gdp_data = new Map();
+
+      d3.csv('../data/cleaned_gdp.csv').then((data) => {
+        data.forEach((d) => {
+          if (d.year == "2023") {
+            gdp_data.set(d.country, Number(d.GDP));
+          }
+        });
+      });
 
       // Chart Area
 
       const svg = d3.select('svg');
       const width = svg.attr('width');
       const height = svg.attr('height');
-      const margins = {top: 10, right: 10, bottom: 100, left: 80};
+      const margins = { top: 10, right: 10, bottom: 100, left: 80 };
       const chartWidth = width - margins.left - margins.right;
       const chartHeight = height - margins.top - margins.bottom;
 
       let chartArea = svg.append('g')
-                         .attr('transform',`translate(${margins.left},${margins.top})`);
+        .attr('transform', `translate(${margins.left},${margins.top})`);
 
-      d3.csv('../data/water_sports.csv').then( (data) => {
+      d3.csv('../data/water_sports.csv').then((data) => {
 
         // Medal Counts
 
         let medal_counts = new Map();
 
-        data.forEach( (d, i) => {
+        data.forEach((d, i) => {
           if (medal_counts.has(d.country)) {
             medal_counts.set(d.country, medal_counts.get(d.country) + 1)
           } else {
@@ -60,79 +73,84 @@
         })
 
         const medal_count_array = Array.from(medal_counts.values());
-        const coastline_array= Array.from(coastlines.values());
+        const coastline_array = Array.from(coastlines.values());
         const filtered_array = coastline_array.filter(d => d > 0);
 
         // Extents and Scales
         const xExtent = d3.extent(filtered_array);
         const xScale = d3.scaleLog().domain(xExtent)
-                                       .range([0, chartWidth]);
-      
+          .range([0, chartWidth]);
+
         const yExtent = d3.extent(medal_count_array);
         const yScale = d3.scaleLog().domain(yExtent)
-                                       .range([chartHeight, 0]);
+          .range([chartHeight, 0]);
 
         // Labels
-        
-        svg.append("text")
-            .attr("class", "y label")
-            .attr("text-anchor", "middle")
-            .attr("x", -chartHeight/2 - margins.top)
-            .attr("y", 20)
-            .attr("transform", "rotate(-90)")
-            .text("Medals in Water Sports (Logarithmic)");
 
         svg.append("text")
-            .attr("class", "x label")
-            .attr("text-anchor", "middle")
-            .attr("x", chartWidth/2 + margins.left)
-            .attr("y", height-20)
-            .text("Coastline Distance (km) (Logarithmic)");
+          .attr("class", "y label")
+          .attr("text-anchor", "middle")
+          .attr("x", -chartHeight / 2 - margins.top)
+          .attr("y", 20)
+          .attr("transform", "rotate(-90)")
+          .text("Medals in Water Sports (Logarithmic)");
+
+        svg.append("text")
+          .attr("class", "x label")
+          .attr("text-anchor", "middle")
+          .attr("x", chartWidth / 2 + margins.left)
+          .attr("y", height - 20)
+          .text("Coastline Distance (km) (Logarithmic)");
 
         // Axes
 
         let leftAxis = d3.axisLeft(yScale);
         svg.append('g')
-           .attr("class", "axis")
-           .attr('transform',`translate(${margins.left-10},${margins.top})`) 
-           .call(leftAxis)
+          .attr("class", "axis")
+          .attr('transform', `translate(${margins.left - 10},${margins.top})`)
+          .call(leftAxis)
 
         let bottomAxis = d3.axisBottom(xScale);
         svg.append('g')
-           .attr('class', 'axis')
-           .attr('transform',`translate(${margins.left},${chartHeight+margins.top+10})`)
-           .call(bottomAxis);
+          .attr('class', 'axis')
+          .attr('transform', `translate(${margins.left},${chartHeight + margins.top + 10})`)
+          .call(bottomAxis);
 
         // Gridlines
-        
+
         let leftGridlines = d3.axisLeft(yScale)
-                              .tickSize(-chartWidth-10)
-                              .tickFormat('');
+          .tickSize(-chartWidth - 10)
+          .tickFormat('');
         svg.append('g')
-           .attr("class", "gridlines")
-           .attr('transform',`translate(${margins.left-10},${margins.top})`)
-           .call(leftGridlines);        
-        
+          .attr("class", "gridlines")
+          .attr('transform', `translate(${margins.left - 10},${margins.top})`)
+          .call(leftGridlines);
+
         let bottomGridlines = d3.axisBottom(xScale)
-                      .tickSize(-chartHeight-10)
-                      .tickFormat('');
+          .tickSize(-chartHeight - 10)
+          .tickFormat('');
         svg.append('g')
-           .attr("class", "gridlines")
-           .attr('transform',`translate(${margins.left},${chartHeight+margins.top+10})`)
-           .call(bottomGridlines);
+          .attr("class", "gridlines")
+          .attr('transform', `translate(${margins.left},${chartHeight + margins.top + 10})`)
+          .call(bottomGridlines);
 
         // Circles
-
-        medal_counts.forEach( (medals, country) => {
-          if (coastlines.has(country)) {
-              chartArea.append('circle') // fix circle locations
+        const minRadius = 2;
+        medal_counts.forEach((medals, country) => {
+          if (coastlines.has(country) && gdp_data.has(country)) {
+            chartArea.append('circle')
               .attr('cx', xScale(coastlines.get(country)))
               .attr('cy', yScale(medals))
-              .attr('r', 5)
+              .attr('r', Math.max(Math.sqrt(gdp_data.get(country)) / 500000, minRadius))
               .style('fill', '#00008B');
           }
         });
       });
+
+      console.log("Coastlines Map:", coastlines);
+      console.log("GDP Data Map:", gdp_data);
+      console.log("Medal Counts Map:", medal_counts);
+
 
     </script>
 
