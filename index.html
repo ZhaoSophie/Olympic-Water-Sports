@@ -51,9 +51,11 @@
       const svg = d3.select('svg');
       const width = svg.attr('width');
       const height = svg.attr('height');
-      const margins = { top: 10, right: 10, bottom: 100, left: 80 };
+      const margins = { top: 60, right: 20, bottom: 100, left: 80 };
       const chartWidth = width - margins.left - margins.right;
       const chartHeight = height - margins.top - margins.bottom;
+
+      let defs = svg.append("defs");
 
       let chartArea = svg.append('g')
         .attr('transform', `translate(${margins.left},${margins.top})`);
@@ -72,16 +74,22 @@
           }
         })
 
+        //list of countries
+        console.log("Medal Counts Map:", medal_counts);
+
         const medal_count_array = Array.from(medal_counts.values());
         const coastline_array = Array.from(coastlines.values());
         const filtered_array = coastline_array.filter(d => d > 0);
 
         // Extents and Scales
         const xExtent = d3.extent(filtered_array);
+        xExtent[1] = xExtent[1] + 60000;
         const xScale = d3.scaleLog().domain(xExtent)
           .range([0, chartWidth]);
 
         const yExtent = d3.extent(medal_count_array);
+        // added a lil more to fit the large circle on the chart area
+        yExtent[1] = yExtent[1] + 20;
         const yScale = d3.scaleLog().domain(yExtent)
           .range([chartHeight, 0]);
 
@@ -134,22 +142,49 @@
           .attr('transform', `translate(${margins.left},${chartHeight + margins.top + 10})`)
           .call(bottomGridlines);
 
-        // Circles
-        const minRadius = 2;
+        // Circles & flags
+        // clips the given country flag onto the current circle
+        function selectFlag(country, r, x, y) {
+          // console.log("country name: " + country);
+          pattern = defs.append("pattern")
+            .attr("id", country)
+            .attr("width", r * 2)
+            .attr("height", r * 2)
+            .attr("x", x + r)
+            .attr("y", y + r)
+            .attr("patternUnits", "userSpaceOnUse");
+          pattern.append("svg:image")
+            .attr("xlink:href", '../flags/' + country + '.png')
+            .attr("width", r * 2)
+            .attr("height", r * 2)
+            .attr("x", 0)
+            .attr("y", 0);
+
+          return "url(#" + country + ")"
+        }
+
+        const minRadius = 5;
         medal_counts.forEach((medals, country) => {
           if (coastlines.has(country) && gdp_data.has(country)) {
+            cx = xScale(coastlines.get(country)) || 0;
+            cy = yScale(medals);
+            // console.log(country + " x: " + cx);
+            // console.log(country + " y: " + cy);
+            r = Math.max(Math.sqrt(gdp_data.get(country)) / 100000, minRadius);
             chartArea.append('circle')
-              .attr('cx', xScale(coastlines.get(country)))
-              .attr('cy', yScale(medals))
-              .attr('r', Math.max(Math.sqrt(gdp_data.get(country)) / 500000, minRadius))
-              .style('fill', '#00008B');
+              .attr('cx', cx)
+              .attr('cy', cy)
+              .attr('r', r)
+              .style('fill', selectFlag(country.replace(' ', '_'), r, cx, cy))
+              .style('stroke', 'black')
+              .style('stroke-width', 1);
           }
         });
+        chartArea.raise();
       });
 
       console.log("Coastlines Map:", coastlines);
       console.log("GDP Data Map:", gdp_data);
-      console.log("Medal Counts Map:", medal_counts);
 
 
     </script>
