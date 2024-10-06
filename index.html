@@ -20,6 +20,7 @@
   <p>
     <br />
     <svg height=650 width=650 style="margin-bottom:50px"></svg>
+    <br>
     <svg id="map" width="700" height="500" style="background: #90e0ef"></svg>
     <script>
       // Coastlines Mappings
@@ -28,6 +29,7 @@
 
       d3.csv('../data/coastlines.csv').then((data) => {
         data.forEach((d, i) => {
+          console.log("countries", d.country);
           coastlines.set(d.country, Number(d.coastline_wf));
         })
       })
@@ -262,17 +264,17 @@
                .text(min_medals)
                .attr("x", scaleX)
                .attr("y", scaleY - 5)
-               .style("text-anchor", "middle")
+               .style("text-anchor", "start")
                .style("dominant-baseline", "middle")
-               .style("font-size", "10px");
+               .style("font-size", "8px");
         
         map_svg.append("text")
                .text(max_medals)
                .attr("x", scaleX + scaleWidth)
                .attr("y", scaleY - 5)
-               .style("text-anchor", "middle")
+               .style("text-anchor", "end")
                .style("dominant-baseline", "middle")
-               .style("font-size", "10px");
+               .style("font-size", "8px");
 
         map_svg.append("text")
                .text(" Medal Earned")
@@ -288,7 +290,7 @@
                 .data(data.features).enter()
                 .append("path")
                 .style("stroke", '#000000')
-                .style("stroke-width", 0.5)
+                .style("stroke-width", 0.3)
                 .attr("fill", function(d) {
                   const countryCode = d.id;  // ISO country code
 
