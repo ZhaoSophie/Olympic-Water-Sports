@@ -20,6 +20,7 @@
   <p>
     <br />
     <svg height=650 width=650 style="margin-bottom:50px"></svg>
+    <svg id="map" width="700" height="500" style="background: #90e0ef"></svg>
     <script>
       // Coastlines Mappings
 
@@ -77,7 +78,7 @@
         //list of countries
         console.log("Medal Counts Map:", medal_counts);
 
-        const medal_count_array = Array.from(medal_counts.values());
+        var medal_count_array = Array.from(medal_counts.values());
         const coastline_array = Array.from(coastlines.values());
         const filtered_array = coastline_array.filter(d => d > 0);
 
@@ -181,12 +182,143 @@
           }
         });
         chartArea.raise();
+
       });
 
       console.log("Coastlines Map:", coastlines);
       console.log("GDP Data Map:", gdp_data);
 
 
+      // let medal_counts = new Map();
+
+      // data.forEach((d, i) => {
+      //   if (medal_counts.has(d.country)) {
+      //     medal_counts.set(d.country, medal_counts.get(d.country) + 1)
+      //   } else {
+      //     medal_counts.set(d.country, 1);
+      //   }
+      // })
+
+      let medal_count_by_id = new Map();
+
+      d3.csv('../data/medals.csv').then((data) => {
+
+        data.forEach( d => {
+          if (medal_count_by_id.has(d.country_code)) {
+            medal_count_by_id.set(d.country_code, medal_count_by_id.get(d.country_code) + 1)
+          } else {
+            medal_count_by_id.set(d.country_code, 1);
+          }
+        });
+
+        console.log("medal_count_by_id", medal_count_by_id);
+
+      });
+
+      // Map
+
+      const map_width = 800;
+      const map_height = 800;
+
+      // Create SVG element
+      const map_svg = d3.select("#map");
+
+      const project = d3.geoMercator() 
+                    .scale(map_width / 2.5 / Math.PI) 
+                    .rotate([0, 0]) 
+                    .center([0, 0]) 
+                    .translate([map_width / 2.5, map_height / 2.5]); 
+
+      d3.json('https://raw.githubusercontent.com/janasayantan/datageojson/master/world.json', d3.autoType).then((data) => { 
+        console.log(data)
+
+        const count_array = Array.from(medal_count_by_id.values())
+        console.log(count_array);
+        const min_medals = Math.min(...count_array);
+        const max_medals = Math.max(...count_array);
+
+        const scaleWidth = 120;
+        const scaleHeight = 15;
+        const scaleX = 20;
+        const scaleY = 450;
+
+        //Draw the rectangle and fill with gradient
+        map_svg.append("rect")
+            .attr("width", scaleWidth)
+            .attr("height", scaleHeight)
+            .attr("x", scaleX)
+            .attr("y", scaleY)
+            .style("fill", "url(#linear-gradient)");
+
+        map_svg.append("text")
+               .text("Medals Earned")
+               .attr("x", scaleX + (scaleWidth / 2))
+               .attr("y", scaleY - 15)
+               .style("text-anchor", "middle")
+               .style("dominant-baseline", "middle")
+               .style("font-size", "12px");
+
+        map_svg.append("text")
+               .text(min_medals)
+               .attr("x", scaleX)
+               .attr("y", scaleY - 5)
+               .style("text-anchor", "middle")
+               .style("dominant-baseline", "middle")
+               .style("font-size", "10px");
+        
+        map_svg.append("text")
+               .text(max_medals)
+               .attr("x", scaleX + scaleWidth)
+               .attr("y", scaleY - 5)
+               .style("text-anchor", "middle")
+               .style("dominant-baseline", "middle")
+               .style("font-size", "10px");
+
+        map_svg.append("text")
+               .text(" Medal Earned")
+
+        const extent = d3.extent(count_array);
+        const colorScale = d3.scaleLog()
+                             .domain(extent)  // Data range (0 to max value in countryData)
+                             .range(['#ffdc73', '#c9a02d']);  // Light blue to saturated blue
+                            //  scaleSequential(extent, d3.interpolateOranges);
+        // Drawing the map 
+        map_svg.append("g")
+                .selectAll("path")
+                .data(data.features).enter()
+                .append("path")
+                .style("stroke", '#000000')
+                .style("stroke-width", 0.5)
+                .attr("fill", function(d) {
+                  const countryCode = d.id;  // ISO country code
+
+                  // Return the color based on the data value, or a default gray if no value exists
+                  return medal_count_by_id.has(countryCode) ? colorScale(medal_count_by_id.get(countryCode)) : "#ededed";
+                })
+                .attr("d", d3.geoPath().projection(project));
+        
+        //Append a defs (for definition) element to your SVG
+        const defs = map_svg.append("defs");
+
+        //Append a linearGradient element to the defs and give it a unique id
+        const linearGradient = defs.append("linearGradient")
+            .attr("id", "linear-gradient");
+        
+        linearGradient.attr("x1", "0%")
+                      .attr("y1", "0%")
+                      .attr("x2", "100%")
+                      .attr("y2", "0%");
+        
+        //Set the color for the start (0%)
+        linearGradient.append("stop")
+                      .attr("offset", "0%")
+                      .attr("stop-color", "#ffdc73"); //light blue
+
+        //Set the color for the end (100%)
+        linearGradient.append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", "#c9a02d"); //dark blue
+              });
     </script>
 
   </p>
