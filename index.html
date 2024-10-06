@@ -27,9 +27,8 @@
 
       let coastlines = new Map()
 
-      d3.csv('../data/coastlines.csv').then((data) => {
+      d3.csv('../data/coastlines_renamed.csv').then((data) => {
         data.forEach((d, i) => {
-          console.log("countries", d.country);
           coastlines.set(d.country, Number(d.coastline_wf));
         })
       })
@@ -41,9 +40,10 @@
 
       let gdp_data = new Map();
 
-      d3.csv('../data/cleaned_gdp.csv').then((data) => {
+      d3.csv('../data/cleaned_gdp_renamed.csv').then((data) => {
         data.forEach((d) => {
           if (d.year == "2023") {
+            console.log(d.country);
             gdp_data.set(d.country, Number(d.GDP));
           }
         });
@@ -189,17 +189,6 @@
 
       console.log("Coastlines Map:", coastlines);
       console.log("GDP Data Map:", gdp_data);
-
-
-      // let medal_counts = new Map();
-
-      // data.forEach((d, i) => {
-      //   if (medal_counts.has(d.country)) {
-      //     medal_counts.set(d.country, medal_counts.get(d.country) + 1)
-      //   } else {
-      //     medal_counts.set(d.country, 1);
-      //   }
-      // })
 
       let medal_count_by_id = new Map();
 
