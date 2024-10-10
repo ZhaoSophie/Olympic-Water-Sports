@@ -1,6 +1,7 @@
 <html>
 
 <head>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     .gridlines line {
       stroke: #bbb;
@@ -9,323 +10,434 @@
     .gridlines .domain {
       stroke: none;
     }
+
+    body {
+      padding: 0;
+      margin: 0;
+      /* background-color: #90e0ef; */
+    }
+
+    .item1 {
+      grid-area: header;
+    }
+
+    .item2 {
+      grid-area: leftside;
+    }
+
+    .item3 {
+      grid-area: rightside;
+    }
+
+    .item4 {
+      grid-area: footer;
+    }
+
+    .item5 {
+      grid-area: main;
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-areas:
+        'header header header'
+        'leftside main rightside'
+        'footer footer footer';
+      gap: 0px;
+      background-color: white;
+      /* padding: 10px; */
+    }
+
+    .item1,
+    .item4 {
+      background-color: #04465a;
+      text-align: center;
+      padding: 5px;
+      color: #ffdc73;
+      font-family: 'Impact', sans-serif;
+      font-size: 20px;
+    }
+
+    .item2,
+    .item3 {
+      background-color: #90e0ef;
+      text-align: center;
+      padding: 100px;
+      /* width: 20%; */
+      color: #90e0ef;
+    }
+
+    .item5 {
+      /* background-color: #90e0ef; */
+      /* text-align: center; */
+      padding: 20px;
+      /* width: 80vh; */
+      font-family: 'Arial Narrow', sans-serif;
+      font-size: 20px;
+      margin-left: 50px;
+      margin-right: 50px;
+      margin-bottom: 20px;
+      color: #828282;
+    }
+
+    #heading {
+      color: #a67c00;
+      font-family: 'Impact', sans-serif;
+    }
+
+    #bold {
+      color: black;
+    }
   </style>
 </head>
 
-<body style="margin: 75">
-  <h3>
-    Countries by Coastline Distance and Water Sport Medals in 2024 Olympics
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-  </h3>
-  <p>
-    <br />
-    <svg height=650 width=650 style="margin-bottom:50px"></svg>
-    <br>
-    <svg id="map" width="700" height="500" style="background: #90e0ef"></svg>
-    <script>
-      // Coastlines Mappings
+<body>
+  <div class="grid-container">
+    <div class="item1">
 
-      const requestData = async function () {
+      <h1 style="display: inline-block;">
+        <img src="medal_icon.png" width="40" style="vertical-align:text-top;">
+        OLYMPIC WATER SPORTS MEDALS VS. COUNTRY COASTLINE
+        <img src="medal_icon.png" width="40" style="vertical-align:text-top;">
+      </h1>
+    </div>
+    <div class="item2">side</div>
+    <div class="item3">side</div>
+    <div class="item4"><br><br></div>
+    <div class="item5">
+      <p><b id="bold">Olympic water sports</b> encompass a diverse range
+        of events that highlight athleticism and skill in aquatic disciplines,
+        including swimming, diving, synchronized swimming, water polo, and various
+        forms of rowing and canoeing. These sports not only showcase the talents of
+        individual athletes but also reflect the rich maritime traditions of
+        competing nations.
+        <br><br>
+        <b id="bold">We'd like to investigate whether there exists a correlation between a
+          country's success in Olympic water sports and its coastline length.</b>
+        Here, coastline is defined as the length (km) of their border
+        in contact with the sea.
+      </p>
+      <h2 id="heading">MEDALS VS. COASTLINE DISTANCE</h2>
+      <p>A total of <b id="bold">41 countries</b> (including the AIN) received medals across all
+        water sports during the 2024 Paris Olympics. The <b id="bold">size of each country's
+          circle represents its GDP</b>, and both axes are logarithmic.
+      </p>
+      <!-- <p> -->
 
-        let coastlines = new Map()
+      <svg height=650 width=650 style="display: block; margin: auto"></svg>
+      <br>
+      <h2 id="heading">MEDALS WON BY COUNTRY</h2>
+      <p>Based on the map below, <b id="bold">there does not appear to be a clear correlation</b>
+        between a country's coastline distance and the number of water sport medals
+        earned at the 2024 Paris Olympics.
+      </p>
+      <svg id="map" width="700" height="500" style="background: #90e0ef;display: block; margin: auto"></svg>
+      <script>
+        // Coastlines Mappings
 
-        // d3.csv('../data/coastlines_renamed_copy.csv').then((data) => {
-        //   data.forEach((d, i) => {
-        //     coastlines.set(d.country, Number(d.coastline_wf));
-        //   })
-        // })
+        const requestData = async function () {
 
-        let data_coastline = await d3.csv('../data/coastlines_renamed_copy.csv');
-        data_coastline.forEach((d, i) => {
-          coastlines.set(d.country, Number(d.coastline_wf));
-        });
+          let coastlines = new Map()
 
+          // d3.csv('../data/coastlines_renamed_copy.csv').then((data) => {
+          //   data.forEach((d, i) => {
+          //     coastlines.set(d.country, Number(d.coastline_wf));
+          //   })
+          // })
 
-
-        // GDP data
-        //let revelant_countries = ['Argentina', 'Australia', 'Brazil', 'Canada', 'China', 'Croatia', 'Cuba', 'Cyprus', 'Czechia', 'Denmark', 'France', 'Germany', 'Great Britain', 'Greece', '"Hong Kong, China"', 'Hungary', 'Ireland', 'Israel', 'Italy', 'Japan', 'Korea', 'Lithuania', 'Netherlands', 'New Zealand', 'Norway', 'Peru', 'Poland', 'Republic of Moldova', 'Romania', 'Serbia', 'Singapore', 'Slovakia', 'South Africa', 'Spain', 'Sweden', 'Switzerland', 'Ukraine', 'United States']
-
-        let gdp_data = new Map();
-
-        // d3.csv('../data/cleaned_gdp_renamed_copy.csv').then((data) => {
-        //   data.forEach((d) => {
-        //     if (d.year == "2023") {
-        //       gdp_data.set(d.country, Number(d.GDP));
-        //     }
-        //   });
-        // });
-
-        let data_gdp = await d3.csv('../data/cleaned_gdp_renamed_copy.csv');
-        data_gdp.forEach((d) => {
-          if (d.year == "2023") {
-            gdp_data.set(d.country, Number(d.GDP));
-          }
-        });
-
-
-        // Chart Area
-
-        const svg = d3.select('svg');
-        const width = svg.attr('width');
-        const height = svg.attr('height');
-        const margins = { top: 60, right: 20, bottom: 100, left: 80 };
-        const chartWidth = width - margins.left - margins.right;
-        const chartHeight = height - margins.top - margins.bottom;
-
-        let defs = svg.append("defs");
-
-        let chartArea = svg.append('g')
-          .attr('transform', `translate(${margins.left},${margins.top})`);
-
-        let data_plot = await d3.csv('../data/water_sports_reorganized.csv');
-
-        // Medal Counts
-
-        let medal_counts = new Map();
-
-        data_plot.forEach((d, i) => {
-          if (medal_counts.has(d.country)) {
-            medal_counts.set(d.country, medal_counts.get(d.country) + 1)
-          } else {
-            medal_counts.set(d.country, 1);
-          }
-        })
-
-        console.log("Medal Counts Map:", medal_counts);
-
-        //list of countries
-
-        var medal_count_array = Array.from(medal_counts.values());
-        const coastline_array = Array.from(coastlines.values());
-        const filtered_array = coastline_array.filter(d => d > 0);
-
-        // Extents and Scales
-        const xExtent = d3.extent(filtered_array);
-        xExtent[1] = xExtent[1] + 60000;
-        const xScale = d3.scaleLog().domain(xExtent)
-          .range([0, chartWidth]);
-
-        const yExtent = d3.extent(medal_count_array);
-        // added a lil more to fit the large circle on the chart area
-        yExtent[1] = yExtent[1] + 20;
-        const yScale = d3.scaleLog().domain(yExtent)
-          .range([chartHeight, 0]);
-
-        // Labels
-
-        svg.append("text")
-          .attr("class", "y label")
-          .attr("text-anchor", "middle")
-          .attr("x", -chartHeight / 2 - margins.top)
-          .attr("y", 20)
-          .attr("transform", "rotate(-90)")
-          .text("Medals in Water Sports (Logarithmic)");
-
-        svg.append("text")
-          .attr("class", "x label")
-          .attr("text-anchor", "middle")
-          .attr("x", chartWidth / 2 + margins.left)
-          .attr("y", height - 20)
-          .text("Coastline Distance (km) (Logarithmic)");
-
-        // Axes
-
-        let leftAxis = d3.axisLeft(yScale);
-        svg.append('g')
-          .attr("class", "axis")
-          .attr('transform', `translate(${margins.left - 10},${margins.top})`)
-          .call(leftAxis)
-
-        let bottomAxis = d3.axisBottom(xScale);
-        svg.append('g')
-          .attr('class', 'axis')
-          .attr('transform', `translate(${margins.left},${chartHeight + margins.top + 10})`)
-          .call(bottomAxis);
-
-        // Gridlines
-
-        let leftGridlines = d3.axisLeft(yScale)
-          .tickSize(-chartWidth - 10)
-          .tickFormat('');
-        svg.append('g')
-          .attr("class", "gridlines")
-          .attr('transform', `translate(${margins.left - 10},${margins.top})`)
-          .call(leftGridlines);
-
-        let bottomGridlines = d3.axisBottom(xScale)
-          .tickSize(-chartHeight - 10)
-          .tickFormat('');
-        svg.append('g')
-          .attr("class", "gridlines")
-          .attr('transform', `translate(${margins.left},${chartHeight + margins.top + 10})`)
-          .call(bottomGridlines);
-
-        // Circles & flags
-        // clips the given country flag onto the current circle
-        function selectFlag(country, r, x, y) {
-          // console.log("country name: " + country);
-          pattern = defs.append("pattern")
-            .attr("id", country)
-            .attr("width", r * 2)
-            .attr("height", r * 2)
-            .attr("x", x + r)
-            .attr("y", y + r)
-            .attr("patternUnits", "userSpaceOnUse");
-          pattern.append("svg:image")
-            .attr("xlink:href", '../flags/' + country + '.png')
-            .attr("width", r * 2)
-            .attr("height", r * 2)
-            .attr("x", 0)
-            .attr("y", 0);
-
-          return "url(#" + country + ")"
-        }
-
-        const minRadius = 5;
-        medal_counts.forEach((medals, country) => {
-          if (coastlines.has(country) && gdp_data.has(country)) {
-            cx = xScale(coastlines.get(country)) || 0;
-            cy = yScale(medals);
-            // console.log(country + " x: " + cx);
-            // console.log(country + " y: " + cy);
-            r = Math.max(Math.sqrt(gdp_data.get(country)) / 100000, minRadius);
-            chartArea.append('circle')
-              .attr('cx', cx)
-              .attr('cy', cy)
-              .attr('r', r)
-              .style('fill', selectFlag(country.replace(' ', '_'), r, cx, cy))
-              .style('stroke', 'black')
-              .style('stroke-width', 1);
-          }
-        });
-        chartArea.raise();
+          let data_coastline = await d3.csv('../data/coastlines_renamed_copy.csv');
+          data_coastline.forEach((d, i) => {
+            coastlines.set(d.country, Number(d.coastline_wf));
+          });
 
 
 
-        console.log("Coastlines Map:", coastlines);
-        console.log("GDP Data Map:", gdp_data);
+          // GDP data
+          //let revelant_countries = ['Argentina', 'Australia', 'Brazil', 'Canada', 'China', 'Croatia', 'Cuba', 'Cyprus', 'Czechia', 'Denmark', 'France', 'Germany', 'Great Britain', 'Greece', '"Hong Kong, China"', 'Hungary', 'Ireland', 'Israel', 'Italy', 'Japan', 'Korea', 'Lithuania', 'Netherlands', 'New Zealand', 'Norway', 'Peru', 'Poland', 'Republic of Moldova', 'Romania', 'Serbia', 'Singapore', 'Slovakia', 'South Africa', 'Spain', 'Sweden', 'Switzerland', 'Ukraine', 'United States']
 
-        let medal_count_by_id = new Map();
+          let gdp_data = new Map();
 
-        let data_medal_id = await d3.csv('../data/medals.csv')
+          // d3.csv('../data/cleaned_gdp_renamed_copy.csv').then((data) => {
+          //   data.forEach((d) => {
+          //     if (d.year == "2023") {
+          //       gdp_data.set(d.country, Number(d.GDP));
+          //     }
+          //   });
+          // });
 
-        data_medal_id.forEach(d => {
-          if (medal_count_by_id.has(d.country_code)) {
-            medal_count_by_id.set(d.country_code, medal_count_by_id.get(d.country_code) + 1)
-          } else {
-            medal_count_by_id.set(d.country_code, 1);
-          }
-        });
+          let data_gdp = await d3.csv('../data/cleaned_gdp_renamed_copy.csv');
+          data_gdp.forEach((d) => {
+            if (d.year == "2023") {
+              gdp_data.set(d.country, Number(d.GDP));
+            }
+          });
 
-        console.log("medal_count_by_id", medal_count_by_id);
 
-        // Map
+          // Chart Area
 
-        const map_width = 800;
-        const map_height = 800;
+          const svg = d3.select('svg');
+          const width = svg.attr('width');
+          const height = svg.attr('height');
+          const margins = { top: 10, right: 20, bottom: 90, left: 80 };
+          const chartWidth = width - margins.left - margins.right;
+          const chartHeight = height - margins.top - margins.bottom;
 
-        // Create SVG element
-        const map_svg = d3.select("#map");
+          let defs = svg.append("defs");
 
-        const project = d3.geoMercator()
-          .scale(map_width / 2.5 / Math.PI)
-          .rotate([0, 0])
-          .center([0, 0])
-          .translate([map_width / 2.5, map_height / 2.5]);
+          let chartArea = svg.append('g')
+            .attr('transform', `translate(${margins.left},${margins.top})`);
 
-        let data = await d3.json('https://raw.githubusercontent.com/janasayantan/datageojson/master/world.json', d3.autoType);
-        const count_array = Array.from(medal_count_by_id.values())
+          let data_plot = await d3.csv('../data/water_sports_reorganized.csv');
 
-        const min_medals = Math.min(...count_array);
-        const max_medals = Math.max(...count_array);
+          // Medal Counts
 
-        const scaleWidth = 120;
-        const scaleHeight = 15;
-        const scaleX = 20;
-        const scaleY = 450;
+          let medal_counts = new Map();
 
-        //Draw the rectangle and fill with gradient
-        map_svg.append("rect")
-          .attr("width", scaleWidth)
-          .attr("height", scaleHeight)
-          .attr("x", scaleX)
-          .attr("y", scaleY)
-          .style("fill", "url(#linear-gradient)");
-
-        map_svg.append("text")
-          .text("Medals Earned")
-          .attr("x", scaleX + (scaleWidth / 2))
-          .attr("y", scaleY - 15)
-          .style("text-anchor", "middle")
-          .style("dominant-baseline", "middle")
-          .style("font-size", "12px");
-
-        map_svg.append("text")
-          .text(min_medals)
-          .attr("x", scaleX)
-          .attr("y", scaleY - 5)
-          .style("text-anchor", "start")
-          .style("dominant-baseline", "middle")
-          .style("font-size", "8px");
-
-        map_svg.append("text")
-          .text(max_medals)
-          .attr("x", scaleX + scaleWidth)
-          .attr("y", scaleY - 5)
-          .style("text-anchor", "end")
-          .style("dominant-baseline", "middle")
-          .style("font-size", "8px");
-
-        map_svg.append("text")
-          .text(" Medal Earned")
-
-        const extent = d3.extent(count_array);
-        const colorScale = d3.scaleLog()
-          .domain(extent)  // Data range (0 to max value in countryData)
-          .range(['#ffdc73', '#c9a02d']);  // Light blue to saturated blue
-        //  scaleSequential(extent, d3.interpolateOranges);
-        // Drawing the map 
-        map_svg.append("g")
-          .selectAll("path")
-          .data(data.features).enter()
-          .append("path")
-          .style("stroke", '#000000')
-          .style("stroke-width", 0.3)
-          .attr("fill", function (d) {
-            const countryCode = d.id;  // ISO country code
-
-            // Return the color based on the data value, or a default gray if no value exists
-            return medal_count_by_id.has(countryCode) ? colorScale(medal_count_by_id.get(countryCode)) : "#ededed";
+          data_plot.forEach((d, i) => {
+            if (medal_counts.has(d.country)) {
+              medal_counts.set(d.country, medal_counts.get(d.country) + 1)
+            } else {
+              medal_counts.set(d.country, 1);
+            }
           })
-          .attr("d", d3.geoPath().projection(project));
 
-        //Append a defs (for definition) element to your SVG
-        const defs_map = map_svg.append("defs");
+          console.log("Medal Counts Map:", medal_counts);
 
-        //Append a linearGradient element to the defs and give it a unique id
-        const linearGradient = defs_map.append("linearGradient")
-          .attr("id", "linear-gradient");
+          //list of countries
 
-        linearGradient.attr("x1", "0%")
-          .attr("y1", "0%")
-          .attr("x2", "100%")
-          .attr("y2", "0%");
+          var medal_count_array = Array.from(medal_counts.values());
+          const coastline_array = Array.from(coastlines.values());
+          const filtered_array = coastline_array.filter(d => d > 0);
 
-        //Set the color for the start (0%)
-        linearGradient.append("stop")
-          .attr("offset", "0%")
-          .attr("stop-color", "#ffdc73"); //light blue
+          // Extents and Scales
+          const xExtent = d3.extent(filtered_array);
+          xExtent[1] = xExtent[1] + 60000;
+          const xScale = d3.scaleLog().domain(xExtent)
+            .range([0, chartWidth]);
 
-        //Set the color for the end (100%)
-        linearGradient.append("stop")
-          .attr("offset", "100%")
-          .attr("stop-color", "#c9a02d"); //dark blue
+          const yExtent = d3.extent(medal_count_array);
+          // added a lil more to fit the large circle on the chart area
+          yExtent[1] = yExtent[1] + 20;
+          const yScale = d3.scaleLog().domain(yExtent)
+            .range([chartHeight, 0]);
 
-      }
-      requestData();
-    </script>
+          // Labels
 
-  </p>
+          svg.append("text")
+            .attr("class", "y label")
+            .attr("text-anchor", "middle")
+            .attr("x", -chartHeight / 2 - margins.top)
+            .attr("y", 20)
+            .attr("transform", "rotate(-90)")
+            .text("Medals in Water Sports");
+
+          svg.append("text")
+            .attr("class", "x label")
+            .attr("text-anchor", "middle")
+            .attr("x", chartWidth / 2 + margins.left)
+            .attr("y", height - 20)
+            .text("Coastline Length (km)");
+
+          // Axes
+
+          let leftAxis = d3.axisLeft(yScale);
+          svg.append('g')
+            .attr("class", "axis")
+            .attr('transform', `translate(${margins.left - 10},${margins.top})`)
+            .call(leftAxis)
+
+          let bottomAxis = d3.axisBottom(xScale);
+          svg.append('g')
+            .attr('class', 'axis')
+            .attr('transform', `translate(${margins.left},${chartHeight + margins.top + 10})`)
+            .call(bottomAxis);
+
+          // Gridlines
+
+          let leftGridlines = d3.axisLeft(yScale)
+            .tickSize(-chartWidth - 10)
+            .tickFormat('');
+          svg.append('g')
+            .attr("class", "gridlines")
+            .attr('transform', `translate(${margins.left - 10},${margins.top})`)
+            .call(leftGridlines);
+
+          let bottomGridlines = d3.axisBottom(xScale)
+            .tickSize(-chartHeight - 10)
+            .tickFormat('');
+          svg.append('g')
+            .attr("class", "gridlines")
+            .attr('transform', `translate(${margins.left},${chartHeight + margins.top + 10})`)
+            .call(bottomGridlines);
+
+          // Circles & flags
+          // clips the given country flag onto the current circle
+          function selectFlag(country, r, x, y) {
+            // console.log("country name: " + country);
+            pattern = defs.append("pattern")
+              .attr("id", country)
+              .attr("width", r * 2)
+              .attr("height", r * 2)
+              .attr("x", x + r)
+              .attr("y", y + r)
+              .attr("patternUnits", "userSpaceOnUse");
+            pattern.append("svg:image")
+              .attr("xlink:href", '../flags/' + country + '.png')
+              .attr("width", r * 2)
+              .attr("height", r * 2)
+              .attr("x", 0)
+              .attr("y", 0);
+
+            return "url(#" + country + ")"
+          }
+
+          const minRadius = 5;
+          medal_counts.forEach((medals, country) => {
+            if (coastlines.has(country) && gdp_data.has(country)) {
+              cx = xScale(coastlines.get(country)) || 0;
+              cy = yScale(medals);
+              // console.log(country + " x: " + cx);
+              // console.log(country + " y: " + cy);
+              r = Math.max(Math.sqrt(gdp_data.get(country)) / 100000, minRadius);
+              chartArea.append('circle')
+                .attr('cx', cx)
+                .attr('cy', cy)
+                .attr('r', r)
+                .style('fill', selectFlag(country.replace(' ', '_'), r, cx, cy))
+                .style('stroke', 'black')
+                .style('stroke-width', 1);
+            }
+          });
+          chartArea.raise();
+
+
+
+          console.log("Coastlines Map:", coastlines);
+          console.log("GDP Data Map:", gdp_data);
+
+          let medal_count_by_id = new Map();
+
+          let data_medal_id = await d3.csv('../data/medals.csv')
+
+          data_medal_id.forEach(d => {
+            if (medal_count_by_id.has(d.country_code)) {
+              medal_count_by_id.set(d.country_code, medal_count_by_id.get(d.country_code) + 1)
+            } else {
+              medal_count_by_id.set(d.country_code, 1);
+            }
+          });
+
+          console.log("medal_count_by_id", medal_count_by_id);
+
+          // Map
+
+          const map_width = 800;
+          const map_height = 800;
+
+          // Create SVG element
+          const map_svg = d3.select("#map");
+
+          const project = d3.geoMercator()
+            .scale(map_width / 2.5 / Math.PI)
+            .rotate([0, 0])
+            .center([0, 0])
+            .translate([map_width / 2.5, map_height / 2.5]);
+
+          let data = await d3.json('https://raw.githubusercontent.com/janasayantan/datageojson/master/world.json', d3.autoType);
+          const count_array = Array.from(medal_count_by_id.values())
+
+          const min_medals = Math.min(...count_array);
+          const max_medals = Math.max(...count_array);
+
+          const scaleWidth = 120;
+          const scaleHeight = 15;
+          const scaleX = 20;
+          const scaleY = 450;
+
+          //Draw the rectangle and fill with gradient
+          map_svg.append("rect")
+            .attr("width", scaleWidth)
+            .attr("height", scaleHeight)
+            .attr("x", scaleX)
+            .attr("y", scaleY)
+            .style("fill", "url(#linear-gradient)");
+
+          map_svg.append("text")
+            .text("Medals Earned")
+            .attr("x", scaleX + (scaleWidth / 2))
+            .attr("y", scaleY - 15)
+            .style("text-anchor", "middle")
+            .style("dominant-baseline", "middle")
+            .style("font-size", "12px");
+
+          map_svg.append("text")
+            .text(min_medals)
+            .attr("x", scaleX)
+            .attr("y", scaleY - 5)
+            .style("text-anchor", "start")
+            .style("dominant-baseline", "middle")
+            .style("font-size", "8px");
+
+          map_svg.append("text")
+            .text(max_medals)
+            .attr("x", scaleX + scaleWidth)
+            .attr("y", scaleY - 5)
+            .style("text-anchor", "end")
+            .style("dominant-baseline", "middle")
+            .style("font-size", "8px");
+
+          map_svg.append("text")
+            .text(" Medal Earned")
+
+          const extent = d3.extent(count_array);
+          const colorScale = d3.scaleLog()
+            .domain(extent)  // Data range (0 to max value in countryData)
+            .range(['#ffdc73', '#c9a02d']);  // Light yellow to dark gold
+          //  scaleSequential(extent, d3.interpolateOranges);
+          // Drawing the map 
+          map_svg.append("g")
+            .selectAll("path")
+            .data(data.features).enter()
+            .append("path")
+            .style("stroke", '#000000')
+            .style("stroke-width", 0.3)
+            .attr("fill", function (d) {
+              const countryCode = d.id;  // ISO country code
+
+              // Return the color based on the data value, or a default gray if no value exists
+              return medal_count_by_id.has(countryCode) ? colorScale(medal_count_by_id.get(countryCode)) : "#ededed";
+            })
+            .attr("d", d3.geoPath().projection(project));
+
+          //Append a defs (for definition) element to your SVG
+          const defs_map = map_svg.append("defs");
+
+          //Append a linearGradient element to the defs and give it a unique id
+          const linearGradient = defs_map.append("linearGradient")
+            .attr("id", "linear-gradient");
+
+          linearGradient.attr("x1", "0%")
+            .attr("y1", "0%")
+            .attr("x2", "100%")
+            .attr("y2", "0%");
+
+          //Set the color for the start (0%)
+          linearGradient.append("stop")
+            .attr("offset", "0%")
+            .attr("stop-color", "#ffdc73"); //light blue
+
+          //Set the color for the end (100%)
+          linearGradient.append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", "#c9a02d"); //dark blue
+
+        }
+        requestData();
+      </script>
+
+      <!-- </p> -->
+    </div>
+  </div>
 
 </body>
 
