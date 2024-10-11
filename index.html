@@ -144,7 +144,7 @@
 
           let coastlines = new Map()
 
-          let data_coastline = await d3.csv('../data/coastlines_renamed_copy.csv');
+          let data_coastline = await d3.csv('../data/coastlines.csv');
           data_coastline.forEach((d, i) => {
             coastlines.set(d.country, Number(d.coastline_wf));
           });
