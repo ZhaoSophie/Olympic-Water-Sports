@@ -155,7 +155,7 @@
 
           let gdp_data = new Map();
 
-          let data_gdp = await d3.csv('../data/cleaned_gdp_renamed_copy.csv');
+          let data_gdp = await d3.csv('../data/cleaned_gdp.csv');
           data_gdp.forEach((d) => {
             if (d.year == "2023") {
               gdp_data.set(d.country, Number(d.GDP));
