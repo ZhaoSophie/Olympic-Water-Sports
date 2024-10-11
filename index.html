@@ -177,7 +177,7 @@
           let chartArea = svg.append('g')
             .attr('transform', `translate(${margins.left},${margins.top})`);
 
-          let data_plot = await d3.csv('../data/water_sports_medals.csv');
+          let data_plot = await d3.csv('../data/water_sports_medals_renamed.csv');
 
           // Medal Counts
 
@@ -305,7 +305,7 @@
 
           let medal_count_by_id = new Map();
 
-          let data_medal_id = await d3.csv('../data/water_sports_medals.csv')
+          let data_medal_id = await d3.csv('../data/water_sports_medals_renamed.csv')
 
           data_medal_id.forEach(d => {
             if (medal_count_by_id.has(d.country_code)) {
