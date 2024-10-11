@@ -132,6 +132,8 @@
         earned at the 2024 Paris Olympics.
       </p>
       <svg id="map" width="700" height="500" style="background: #90e0ef;display: block; margin: auto"></svg>
+      <br />
+      <center>Medals earned</center>
       <svg id="colorLegend" height="50" width="600" style="background: #fff; margin-top:30px" >
       </svg>
 
@@ -350,45 +352,10 @@
           const min_medals = Math.min(...count_array);
           const max_medals = Math.max(...count_array);
 
-          const scaleWidth = 120;
-          const scaleHeight = 15;
-          const scaleX = 20;
-          const scaleY = 450;
-
-          //Draw the rectangle and fill with gradient
-          map_svg.append("rect")
-            .attr("width", scaleWidth)
-            .attr("height", scaleHeight)
-            .attr("x", scaleX)
-            .attr("y", scaleY)
-            .style("fill", "url(#linear-gradient)");
-
-          map_svg.append("text")
-            .text("Medals Earned")
-            .attr("x", scaleX + (scaleWidth / 2))
-            .attr("y", scaleY - 15)
-            .style("text-anchor", "middle")
-            .style("dominant-baseline", "middle")
-            .style("font-size", "12px");
-
-          // map_svg.append("text")
-          //   .text(min_medals)
-          //   .attr("x", scaleX)
-          //   .attr("y", scaleY - 5)
-          //   .style("text-anchor", "start")
-          //   .style("dominant-baseline", "middle")
-          //   .style("font-size", "8px");
-
-          // map_svg.append("text")
-          //   .text(max_medals)
-          //   .attr("x", scaleX + scaleWidth)
-          //   .attr("y", scaleY - 5)
-          //   .style("text-anchor", "end")
-          //   .style("dominant-baseline", "middle")
-          //   .style("font-size", "8px");
-
-          // map_svg.append("text")
-          //   .text(" Medal Earned")
+          // const scaleWidth = 120;
+          // const scaleHeight = 15;
+          // const scaleX = 20;
+          // const scaleY = 450;
 
           const extent = d3.extent(count_array);
           const colorScale = d3.scaleLog()
@@ -412,27 +379,27 @@
           
           function drawLegend(legendSelector, legendColorScale) {
       
-            // This code should adapt to a variety of different kinds of color scales
             //  Credit Prof. Rz if you are basing a legend on this structure, and note PERFORMANCE CONSIDERATIONS
             
-            // Shrink legend bar by 5 px inwards from sides of SVG
-            const offsets = { width: 10,
-                              top: 2,
-                              bottom: 24 }; 
             // Number of integer 'pixel steps' to draw when showing continuous scales
             //    Warning, not using a canvas element so lots of rect tags will be created for low stepSize, causing issues with performance -- keep this large
             const stepSize = 4; 
             // Extend the minmax by 0% in either direction to expose more features by default
             const minMaxExtendPercent = 0;
             
-            
+            const offsets = { width: 10,
+                              top: 2,
+                              bottom: 24 }; 
+
             const legend = d3.select(legendSelector);
             const legendHeight = legend.attr("height");
             const legendBarWidth = legend.attr("width") - (offsets.width * 2);
             const legendMinMax = d3.extent(legendColorScale.domain()); 
                         // recover the min and max values from most kinds of numeric scales
             const minMaxExtension = (legendMinMax[1] - legendMinMax[0]) * minMaxExtendPercent;
-            const barHeight = legendHeight - offsets.top - offsets.bottom;     
+            const barHeight = legendHeight - offsets.top - offsets.bottom;   
+            
+            // Shrink legend bar by 5 px inwards from sides of SVG
 
             let barScale = d3.scaleLinear().domain([legendMinMax[0]-minMaxExtension,
                                                       legendMinMax[1]+minMaxExtension])
