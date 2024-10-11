@@ -81,7 +81,7 @@
     }
 
     #heading {
-      color: #a67c00;
+      color: #bf7900;
       font-family: 'Impact', sans-serif;
     }
 
@@ -132,8 +132,8 @@
         earned at the 2024 Paris Olympics.
       </p>
       <svg id="map" width="700" height="500" style="background: #90e0ef;display: block; margin: auto"></svg>
-      <br />
-      <p style="text-align: center;">Medals earned</p><br>
+      <!-- <br /> -->
+      <p style="text-align: center;">Medals earned</p>
       <svg id="colorLegend" height="50" width="600" style="background: #fff; display: block; margin: auto">
       </svg>
 
@@ -346,7 +346,7 @@
           const extent = d3.extent(count_array);
           const colorScale = d3.scaleLog()
             .domain(extent)  // Data range (0 to max value in countryData)
-            .range(['#ffdc73', '#c9a02d']);  // Light yellow to dark gold
+            .range(['#ffea9e', '#bf7900']);  // Light yellow to dark gold
           //  scaleSequential(extent, d3.interpolateOranges);
           // Drawing the map 
           map_svg.append("g")
