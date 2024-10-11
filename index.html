@@ -132,6 +132,9 @@
         earned at the 2024 Paris Olympics.
       </p>
       <svg id="map" width="700" height="500" style="background: #90e0ef;display: block; margin: auto"></svg>
+      <svg id="colorLegend" height="50" width="600" style="background: #fff; margin-top:30px" >
+      </svg>
+
       <script>
         // Coastlines Mappings
 
@@ -310,8 +313,6 @@
           });
           chartArea.raise();
 
-
-
           console.log("Coastlines Map:", coastlines);
           console.log("GDP Data Map:", gdp_data);
 
@@ -370,24 +371,24 @@
             .style("dominant-baseline", "middle")
             .style("font-size", "12px");
 
-          map_svg.append("text")
-            .text(min_medals)
-            .attr("x", scaleX)
-            .attr("y", scaleY - 5)
-            .style("text-anchor", "start")
-            .style("dominant-baseline", "middle")
-            .style("font-size", "8px");
+          // map_svg.append("text")
+          //   .text(min_medals)
+          //   .attr("x", scaleX)
+          //   .attr("y", scaleY - 5)
+          //   .style("text-anchor", "start")
+          //   .style("dominant-baseline", "middle")
+          //   .style("font-size", "8px");
 
-          map_svg.append("text")
-            .text(max_medals)
-            .attr("x", scaleX + scaleWidth)
-            .attr("y", scaleY - 5)
-            .style("text-anchor", "end")
-            .style("dominant-baseline", "middle")
-            .style("font-size", "8px");
+          // map_svg.append("text")
+          //   .text(max_medals)
+          //   .attr("x", scaleX + scaleWidth)
+          //   .attr("y", scaleY - 5)
+          //   .style("text-anchor", "end")
+          //   .style("dominant-baseline", "middle")
+          //   .style("font-size", "8px");
 
-          map_svg.append("text")
-            .text(" Medal Earned")
+          // map_svg.append("text")
+          //   .text(" Medal Earned")
 
           const extent = d3.extent(count_array);
           const colorScale = d3.scaleLog()
@@ -408,28 +409,84 @@
               return medal_count_by_id.has(countryCode) ? colorScale(medal_count_by_id.get(countryCode)) : "#ededed";
             })
             .attr("d", d3.geoPath().projection(project));
+          
+          function drawLegend(legendSelector, legendColorScale) {
+      
+            // This code should adapt to a variety of different kinds of color scales
+            //  Credit Prof. Rz if you are basing a legend on this structure, and note PERFORMANCE CONSIDERATIONS
+            
+            // Shrink legend bar by 5 px inwards from sides of SVG
+            const offsets = { width: 10,
+                              top: 2,
+                              bottom: 24 }; 
+            // Number of integer 'pixel steps' to draw when showing continuous scales
+            //    Warning, not using a canvas element so lots of rect tags will be created for low stepSize, causing issues with performance -- keep this large
+            const stepSize = 4; 
+            // Extend the minmax by 0% in either direction to expose more features by default
+            const minMaxExtendPercent = 0;
+            
+            
+            const legend = d3.select(legendSelector);
+            const legendHeight = legend.attr("height");
+            const legendBarWidth = legend.attr("width") - (offsets.width * 2);
+            const legendMinMax = d3.extent(legendColorScale.domain()); 
+                        // recover the min and max values from most kinds of numeric scales
+            const minMaxExtension = (legendMinMax[1] - legendMinMax[0]) * minMaxExtendPercent;
+            const barHeight = legendHeight - offsets.top - offsets.bottom;     
 
-          //Append a defs (for definition) element to your SVG
-          const defs_map = map_svg.append("defs");
+            let barScale = d3.scaleLinear().domain([legendMinMax[0]-minMaxExtension,
+                                                      legendMinMax[1]+minMaxExtension])
+                                          .range([0,legendBarWidth]);
+            let barAxis = d3.axisBottom(barScale);
+            
+            // Place for bar slices to live
+            let bar = legend.append("g")
+                            .attr("class", "legend colorbar")
+                            .attr("transform", `translate(${offsets.width},${offsets.top})`)
+              
+            for (let i=0; i<legendBarWidth; i=i+stepSize) {
+              
+              let center = i+(stepSize/2);
+              let dataCenter = barAxis.scale().invert( center );
+              
+              // below normal scale bounds
+              if ( dataCenter < legendMinMax[0] ) { 
+                bar.append("rect")
+                  .attr("x", i)
+                  .attr("y", 0)
+                  .attr("width", stepSize)
+                  .attr("height",barHeight)
+                  .style("fill", legendColorScale( legendMinMax[0] ) ); 
+              }
+              // within normal scale bounds
+              else if ( dataCenter < legendMinMax[1] ) {
+                bar.append("rect")
+                    .attr("x", i)
+                    .attr("y", 0)
+                    .attr("width", stepSize)
+                    .attr("height",barHeight)
+                    .style("fill", legendColorScale( dataCenter ) ); 
+              }
+              // above normal scale bounds
+              else {
+                bar.append("rect")
+                    .attr("x", i)
+                    .attr("y", 0)
+                    .attr("width", stepSize)
+                    .attr("height",barHeight)
+                    .style("fill", legendColorScale( legendMinMax[1] ) ); 
+              }
+              
+            }
+            
+            // draw legend labels
+            legend.append("g")
+                  .attr("class", "legend axis")
+                  .attr("transform",`translate(${offsets.width},${offsets.top+barHeight+5})`)
+                  .call(barAxis);
+          }
 
-          //Append a linearGradient element to the defs and give it a unique id
-          const linearGradient = defs_map.append("linearGradient")
-            .attr("id", "linear-gradient");
-
-          linearGradient.attr("x1", "0%")
-            .attr("y1", "0%")
-            .attr("x2", "100%")
-            .attr("y2", "0%");
-
-          //Set the color for the start (0%)
-          linearGradient.append("stop")
-            .attr("offset", "0%")
-            .attr("stop-color", "#ffdc73"); //light blue
-
-          //Set the color for the end (100%)
-          linearGradient.append("stop")
-            .attr("offset", "100%")
-            .attr("stop-color", "#c9a02d"); //dark blue
+          drawLegend("#colorLegend", colorScale);
 
         }
         requestData();
