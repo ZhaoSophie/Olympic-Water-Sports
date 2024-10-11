@@ -129,9 +129,10 @@
       <h2 id="heading">MEDALS WON BY COUNTRY</h2>
       <p>Based on the map below, <b id="bold">there does not appear to be a clear correlation</b>
         between a country's coastline distance and the number of water sport medals
-        earned at the 2024 Paris Olympics.
+        earned at the 2024 Paris Olympics. Countries in grey did not earn medals in water sports at the 2024 Paris Olympics,
+        and the remaining countries are colored in by the number of medals earned in water sports.
       </p>
-      <svg id="map" width="700" height="500" style="background: #90e0ef;display: block; margin: auto"></svg>
+      <svg id="map" width="640" height="500" style="background: #90e0ef;display: block; margin: auto"></svg>
       <!-- <br /> -->
       <p style="text-align: center;">Medals earned</p>
       <svg id="colorLegend" height="50" width="600" style="background: #fff; display: block; margin: auto">
@@ -148,8 +149,6 @@
           data_coastline.forEach((d, i) => {
             coastlines.set(d.country, Number(d.coastline_wf));
           });
-
-
 
           // GDP data
           //let revelant_countries = ['Argentina', 'Australia', 'Brazil', 'Canada', 'China', 'Croatia', 'Cuba', 'Cyprus', 'Czechia', 'Denmark', 'France', 'Germany', 'Great Britain', 'Greece', '"Hong Kong, China"', 'Hungary', 'Ireland', 'Israel', 'Italy', 'Japan', 'Korea', 'Lithuania', 'Netherlands', 'New Zealand', 'Norway', 'Peru', 'Poland', 'Republic of Moldova', 'Romania', 'Serbia', 'Singapore', 'Slovakia', 'South Africa', 'Spain', 'Sweden', 'Switzerland', 'Ukraine', 'United States']
@@ -328,8 +327,6 @@
 
           const project = d3.geoMercator()
             .scale(map_width / 2.5 / Math.PI)
-            .rotate([0, 0])
-            .center([0, 0])
             .translate([map_width / 2.5, map_height / 2.5]);
 
           let data = await d3.json('https://raw.githubusercontent.com/janasayantan/datageojson/master/world.json', d3.autoType);
@@ -338,16 +335,11 @@
           const min_medals = Math.min(...count_array);
           const max_medals = Math.max(...count_array);
 
-          // const scaleWidth = 120;
-          // const scaleHeight = 15;
-          // const scaleX = 20;
-          // const scaleY = 450;
-
           const extent = d3.extent(count_array);
           const colorScale = d3.scaleLog()
             .domain(extent)  // Data range (0 to max value in countryData)
             .range(['#ffea9e', '#bf7900']);  // Light yellow to dark gold
-          //  scaleSequential(extent, d3.interpolateOranges);
+          
           // Drawing the map 
           map_svg.append("g")
             .selectAll("path")
@@ -356,9 +348,8 @@
             .style("stroke", '#000000')
             .style("stroke-width", 0.3)
             .attr("fill", function (d) {
-              const countryCode = d.id;  // ISO country code
+              const countryCode = d.id;
 
-              // Return the color based on the data value, or a default gray if no value exists
               return medal_count_by_id.has(countryCode) ? colorScale(medal_count_by_id.get(countryCode)) : "#ededed";
             })
             .attr("d", d3.geoPath().projection(project));
@@ -375,7 +366,7 @@
 
             const offsets = {
               width: 10,
-              top: 2,
+              top: 0,
               bottom: 24
             };
 
@@ -389,9 +380,8 @@
 
             // Shrink legend bar by 5 px inwards from sides of SVG
 
-            let barScale = d3.scaleLinear().domain([legendMinMax[0] - minMaxExtension,
-            legendMinMax[1] + minMaxExtension])
-              .range([0, legendBarWidth]);
+            let barScale = d3.scaleLinear().domain([legendMinMax[0] - minMaxExtension, legendMinMax[1] + minMaxExtension])
+                                           .range([0, legendBarWidth]);
             let barAxis = d3.axisBottom(barScale);
 
             // Place for bar slices to live
