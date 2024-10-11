@@ -129,12 +129,13 @@
       <h2 id="heading">MEDALS WON BY COUNTRY</h2>
       <p>Based on the map below, <b id="bold">there does not appear to be a clear correlation</b>
         between a country's coastline distance and the number of water sport medals
-        earned at the 2024 Paris Olympics. Countries in grey did not earn medals in water sports at the 2024 Paris Olympics,
+        earned at the 2024 Paris Olympics. Countries in light grey did not earn medals in water sports at the 2024 Paris
+        Olympics,
         and the remaining countries are colored in by the number of medals earned in water sports.
       </p>
       <svg id="map" width="640" height="500" style="background: #90e0ef;display: block; margin: auto"></svg>
       <!-- <br /> -->
-      <p style="text-align: center;">Medals earned</p>
+      <p style="text-align: center;" id="bold">Medals Earned</p>
       <svg id="colorLegend" height="50" width="600" style="background: #fff; display: block; margin: auto">
       </svg>
 
@@ -339,7 +340,7 @@
           const colorScale = d3.scaleLog()
             .domain(extent)  // Data range (0 to max value in countryData)
             .range(['#ffea9e', '#bf7900']);  // Light yellow to dark gold
-          
+
           // Drawing the map 
           map_svg.append("g")
             .selectAll("path")
@@ -381,7 +382,7 @@
             // Shrink legend bar by 5 px inwards from sides of SVG
 
             let barScale = d3.scaleLinear().domain([legendMinMax[0] - minMaxExtension, legendMinMax[1] + minMaxExtension])
-                                           .range([0, legendBarWidth]);
+              .range([0, legendBarWidth]);
             let barAxis = d3.axisBottom(barScale);
 
             // Place for bar slices to live
